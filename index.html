@@ -870,7 +870,6 @@ function plannerHTML(t){
     (s.prompts || []).forEach(pr => { h += '<p class="prompt">' + esc(pr[0]) + "</p>"; for (let i = 0; i < pr[1]; i++) h += '<div class="wline"></div>'; });
     (s.checks || []).forEach(c => { h += '<p class="check">&#9744; ' + esc(c) + "</p>"; });
   });
-  h += '<p class="prompt">One thing I will do when I get stuck:</p><div class="wline"></div>';
   h += "</div>";
   return h;
 }
