@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en-CA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CDLI Rich Tasks</title>
+<style>
+  :root{
+    --ink:#1a1a1a; --brand:#14324f; --brand2:#1f4e79; --line:#c4ced6; --soft:#eef3f7;
+    --teach:#f6f6f2; --teachline:#9a9a6a; --muted:#555;
+  }
+  *{ box-sizing:border-box; }
+  body{ font-family:"Segoe UI","Helvetica Neue",Helvetica,Arial,sans-serif; color:var(--ink); margin:0; line-height:1.48; background:#fdfdfc; }
+  button,input,select,textarea{ font-family:inherit; font-size:1rem; }
+  header.app{ background:var(--brand); color:#fff; padding:18px 20px 14px; }
+  header.app h1{ margin:0; font-size:1.55rem; line-height:1.2; }
+  header.app p{ margin:4px 0 0; color:#d7e3ee; max-width:70ch; }
+  .draftbar{ background:#fdf3d8; border-bottom:1px solid #e3cf8f; color:#5c4a08; padding:7px 20px; font-size:.92rem; }
+  main{ max-width:1060px; margin:0 auto; padding:18px 16px 48px; }
+  .filters{ background:#fff; border:1px solid var(--line); border-radius:8px; padding:14px 16px; display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; }
+  .filters label{ display:block; font-size:.82rem; font-weight:700; color:var(--brand); letter-spacing:.02em; margin-bottom:3px; }
+  .filters select,.filters input{ width:100%; padding:7px 8px; border:1px solid var(--line); border-radius:5px; background:#fff; }
+  .filters .searchbox{ grid-column:span 2; }
+  .countrow{ display:flex; align-items:center; gap:14px; margin:16px 2px 10px; }
+  .countrow .count{ font-weight:700; color:var(--brand); }
+  .linkbtn{ background:none; border:none; color:var(--brand2); text-decoration:underline; cursor:pointer; padding:0; }
+  .cards{ display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:14px; }
+  .card{ background:#fff; border:1px solid var(--line); border-radius:8px; padding:14px 16px; display:flex; flex-direction:column; gap:8px; }
+  .card h2{ font-size:1.08rem; margin:0; color:var(--brand); line-height:1.3; }
+  .card .courseline{ font-size:.8rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--brand2); }
+  .chips{ display:flex; flex-wrap:wrap; gap:5px; }
+  .chip{ background:var(--soft); border:1px solid var(--line); border-radius:20px; padding:1px 9px; font-size:.78rem; color:var(--brand); }
+  .chip.topic{ background:#eef6ee; border-color:#b9d2b9; }
+  .metastrip{ border-top:1px solid var(--soft); border-bottom:1px solid var(--soft); padding:7px 0; font-size:.86rem; display:grid; grid-template-columns:1fr 1fr; gap:3px 12px; }
+  .metastrip b{ color:var(--brand); font-weight:700; }
+  .card .productline{ font-size:.92rem; }
+  .card .sourceline{ font-size:.78rem; color:var(--muted); margin-top:auto; }
+  .card button.open{ align-self:flex-start; background:var(--brand2); color:#fff; border:none; border-radius:5px; padding:7px 14px; cursor:pointer; }
+  .empty{ border:1px dashed var(--line); border-radius:8px; padding:26px; text-align:center; color:var(--muted); background:#fff; }
+  .backrow{ margin-bottom:12px; display:flex; gap:10px; flex-wrap:wrap; }
+  .btn{ background:var(--brand2); color:#fff; border:none; border-radius:5px; padding:8px 15px; cursor:pointer; }
+  .btn.secondary{ background:#fff; color:var(--brand2); border:1px solid var(--brand2); }
+  .detail{ background:#fff; border:1px solid var(--line); border-radius:8px; padding:20px 22px; }
+  .detail h2{ color:var(--brand); margin:2px 0 6px; font-size:1.45rem; line-height:1.25; }
+  .detail .courseline{ font-size:.82rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--brand2); }
+  .metapanel{ background:var(--soft); border:1px solid var(--line); border-radius:8px; padding:13px 16px; margin:14px 0 18px; display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px 18px; }
+  .metapanel .k{ font-size:.78rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--brand2); }
+  .metapanel .v{ font-size:1rem; }
+  .metapanel .note{ grid-column:1/-1; font-size:.9rem; color:#333; }
+  .detail h3{ color:var(--brand); margin:20px 0 6px; font-size:1.05rem; }
+  .detail p{ margin:0 0 10px; max-width:78ch; }
+  .productbox{ background:var(--soft); border-left:3px solid var(--brand2); padding:10px 14px; }
+  .teachbox{ background:var(--teach); border-left:3px solid var(--teachline); padding:11px 15px; margin-top:10px; }
+  .teachbox h3{ margin-top:0; }
+  .detail .sourceline{ color:var(--muted); font-size:.88rem; margin-top:18px; border-top:1px solid var(--soft); padding-top:10px; }
+  .handout{ background:#fff; border:1px solid var(--line); border-radius:8px; padding:26px 28px; }
+  .handout h2{ color:#111; margin:0 0 14px; font-size:1.4rem; }
+  .handout p{ margin:0 0 12px; max-width:75ch; }
+  .handout .hlabel{ font-weight:700; margin:16px 0 4px; }
+  .handout .hproduct{ border:1px solid #999; padding:9px 12px; }
+  footer.app{ max-width:1060px; margin:0 auto; padding:0 16px 30px; color:var(--muted); font-size:.85rem; }
+  @media print{
+    body.printing-handout header.app, body.printing-handout .draftbar, body.printing-handout footer.app,
+    body.printing-handout #view-list, body.printing-handout #view-detail, body.printing-handout .no-print{ display:none !important; }
+    body.printing-handout main{ padding:0; max-width:none; }
+    body.printing-handout .handout{ border:none; border-radius:0; padding:0; }
+  }
+</style>
+</head>
+<body>
+<header class="app">
+  <h1>CDLI Rich Tasks</h1>
+  <p>Open production tasks for classroom use, organized by course, unit and indicator. Every task states its materials, time and grouping on its face. Select a task to see the full text and a printable student handout.</p>
+</header>
+<div class="draftbar">Draft collection: this seed version is under review and is not yet listed in the CDLI applications index.</div>
+
+<main>
+  <section id="view-list">
+    <div class="filters" role="search">
+      <div><label for="f-course">Course</label><select id="f-course"></select></div>
+      <div><label for="f-unit">Unit</label><select id="f-unit"></select></div>
+      <div id="wrap-topic" hidden><label for="f-topic">Topic</label><select id="f-topic"></select></div>
+      <div><label for="f-grouping">Grouping</label><select id="f-grouping"></select></div>
+      <div><label for="f-devices">Devices</label><select id="f-devices"></select></div>
+      <div><label for="f-time">Time</label><select id="f-time"></select></div>
+      <div><label for="f-ptype">Product type</label><select id="f-ptype"></select></div>
+      <div class="searchbox"><label for="f-search">Search</label><input id="f-search" type="search" placeholder="Search titles, task text and indicators"></div>
+    </div>
+    <div class="countrow"><span class="count" id="result-count"></span><button class="linkbtn" id="clear-filters" type="button">Clear all filters</button></div>
+    <div class="cards" id="cards"></div>
+    <div class="empty" id="empty" hidden>No tasks match the current filters. <button class="linkbtn" id="clear-filters-2" type="button">Clear all filters</button></div>
+  </section>
+
+  <section id="view-detail" hidden></section>
+  <section id="view-handout" hidden></section>
+</main>
+
+<footer class="app">CDLI Rich Tasks, seed version, November 2026. Task sources are credited on each task. Teacher guidance on a task page is for teachers; the student handout prints the task text only.</footer>
+
+<script>
+"use strict";
+const TASKS = [
+ {
+  "ask": "Write an analysis of the risks and benefits of seismic surveying off this province, about two pages in length. Present the view of each of these four perspectives in turn: an offshore oil company planning to drill; a commercial fish harvester who works the survey area; a marine biologist who studies whales; and a resident of a coastal community near the survey area. For each perspective, identify the main risks and benefits as that group sees them, and the evidence or reasoning behind the view. Finish with your own weighed conclusion: should the surveys proceed, proceed with conditions, or not proceed? Support your conclusion with the strongest points from at least two of the perspectives.",
+  "course": "physics-2204",
+  "courseName": "Physics 2204",
+  "devices": "none",
+  "extension": "Extension: research one real mitigation measure, such as seasonal restrictions or marine mammal observers, and assess whether it changes your conclusion.",
+  "grouping": "individual",
+  "groupingNote": "Written individually. Conclusions can be compared in a closing class discussion.",
+  "id": "stse-physics-2204-seismic-perspectives",
+  "indicators": [
+   "PH11.11.2"
+  ],
+  "materialsNote": "The task text is the handout. No additional materials are required.",
+  "materialsTags": [
+   "Printed handout"
+  ],
+  "product": "A written analysis covering four perspectives, ending in a defended conclusion.",
+  "productType": "Analysis",
+  "source": {
+   "kind": "original",
+   "label": "Authored for CDLI, November 2026"
+  },
+  "stimulus": "Before an oil company can drill exploration wells off the coast of Newfoundland and Labrador, it maps the rock below the seabed using seismic surveys. A survey vessel tows air guns that send powerful pulses of sound through the water. The sound reflects off layers of rock below the seabed, and the returning echoes build a picture of where oil and gas might be found. A survey can run day and night for weeks at a time, and the sound it makes travels a long way through the ocean.",
+  "strongResponse": "A strong response presents each of the four perspectives fairly, separates scientific claims, such as the effects of intense sound on marine life, from economic claims, and reaches a conclusion whose conditions follow from the evidence presented rather than from preference.",
+  "timeBand": "One period",
+  "title": "Seismic Surveys at Sea: Risks and Benefits from Four Perspectives",
+  "topics": [],
+  "unit": 4,
+  "unitName": "Waves"
+ },
+ {
+  "ask": "Sort the eight questions into two lists: scientific questions, which can be answered by investigation and evidence, and technological problems, which call for a designed solution that meets a need within limits such as cost and safety. Then choose one question from each list and write a defence of your sorting: explain what makes the first one answerable by science and what makes the second one a problem for design. Finally, rewrite one scientific question from the list as a technological problem, and one technological problem as a scientific question.",
+  "course": "physics-2204",
+  "courseName": "Physics 2204",
+  "devices": "none",
+  "extension": "Extension: find one question from a recent news story about an energy project and classify it, defending your choice in a short paragraph.",
+  "grouping": "either",
+  "groupingNote": "Pairs work well for the sorting defence; the rewrites can be done individually.",
+  "id": "stse-physics-2204-science-or-technology",
+  "indicators": [
+   "PH11.10.2"
+  ],
+  "materialsNote": "The task text, including the eight questions, is the handout. No additional materials are required.",
+  "materialsTags": [
+   "Printed handout"
+  ],
+  "product": "The two sorted lists, a written defence of two of your choices, and two rewritten questions.",
+  "productType": "Analysis",
+  "source": {
+   "kind": "original",
+   "label": "Authored for CDLI, November 2026"
+  },
+  "stimulus": "A company has proposed a tidal power project for a narrow channel near a community in Newfoundland and Labrador. The moving water would turn turbines and generate electricity. At a public meeting, residents raised these eight questions: (1) How fast does the current flow through the channel at different stages of the tide? (2) How can the turbines be built so that fish can pass through the channel unharmed? (3) What effect would slowing the current have on sediment building up near the wharf? (4) What is the cheapest way to connect the project to the provincial electricity grid? (5) How much energy is transferred from the moving water to a turbine blade each second? (6) How can the equipment be protected from salt water corrosion and winter ice? (7) Why does the tide rise and fall twice each day in this channel? (8) How can the community be sure the lights stay on when the tide is slack?",
+  "strongResponse": "A strong response applies one working test consistently (answered by evidence, or solved by a design that meets criteria and constraints), including to the borderline items about cost and reliability, and the rewrites genuinely change the kind of question being asked.",
+  "timeBand": "30-45 min",
+  "title": "Science Question or Technology Problem? Sorting a Community's Questions",
+  "topics": [],
+  "unit": 3,
+  "unitName": "Work and Energy"
+ },
+ {
+  "ask": "Prepare a one-page decision brief for a review panel. State a clear recommendation: build the wind farm as proposed, build a smaller version as a trial, or do not build. Support your recommendation with at least three pieces of evidence or reasoned argument, drawing on how generators work and on what the grid needs. Recognize at least two other perspectives, such as electricity ratepayers, residents near the proposed site, or the operators who keep the grid stable, and answer the strongest argument against your recommendation.",
+  "course": "physics-3204",
+  "courseName": "Physics 3204",
+  "devices": "none",
+  "extension": "Extension: find the current share of wind generation on the island grid and update one piece of your evidence, noting whether your recommendation survives the update.",
+  "grouping": "individual",
+  "groupingNote": "Written individually, in the format of a briefing note.",
+  "id": "stse-physics-3204-wind-decision-brief",
+  "indicators": [
+   "PH12.11.6"
+  ],
+  "materialsNote": "The task text is the handout. No additional materials are required.",
+  "materialsTags": [
+   "Printed handout"
+  ],
+  "product": "A one-page decision brief with a stated recommendation, supporting evidence, and a reply to the strongest opposing argument.",
+  "productType": "Written brief",
+  "source": {
+   "kind": "original",
+   "label": "Authored for CDLI, November 2026"
+  },
+  "stimulus": "Newfoundland and Labrador Hydro is studying whether to add a large wind farm to the island's electricity system. A wind turbine generates electricity by electromagnetic induction: as the blades turn, magnets and coils move past each other and convert the energy of the turning rotor into electrical energy. The island grid must match supply to demand at every moment, and wind output rises and falls with the weather. Hydro's hydroelectric plants can adjust their output quickly, and subsea cables now connect the island to Labrador and to Nova Scotia.",
+  "strongResponse": "A strong response states one clear recommendation, supports it with evidence that uses the Fields content (induction, generation, grid behaviour), recognizes at least two other perspectives, and answers the strongest opposing argument instead of ignoring it. The one-page limit rewards selection over listing.",
+  "timeBand": "One period",
+  "title": "Decision Brief: Adding Wind Generation to the Island Grid",
+  "topics": [],
+  "unit": 3,
+  "unitName": "Fields"
+ },
+ {
+  "ask": "Choose three design decisions from the description above. For each one, name the constraint that drove the decision (for example, distance, climate, cost, reliability, or the marine environment), state what was gained by the choice, and state what was given up. Present your work as a table. Then write a short summary answering this question: is there any design for this link that has no tradeoffs? Defend your answer using your three examples.",
+  "course": "physics-3204",
+  "courseName": "Physics 3204",
+  "devices": "none",
+  "extension": "Extension: apply the same three-row table to a current energy or transmission proposal in the news and compare the pattern of tradeoffs.",
+  "grouping": "either",
+  "groupingNote": "Works individually or in pairs; the table format suits paired checking.",
+  "id": "stse-physics-3204-link-tradeoffs",
+  "indicators": [
+   "PH12.11.8"
+  ],
+  "materialsNote": "The task text is the handout. No additional materials are required.",
+  "materialsTags": [
+   "Printed handout"
+  ],
+  "product": "A three-row tradeoff table and a short written summary.",
+  "productType": "Analysis",
+  "source": {
+   "kind": "original",
+   "label": "Authored for CDLI, November 2026"
+  },
+  "stimulus": "The Labrador-Island Link carries electricity from Muskrat Falls in Labrador to the island of Newfoundland, a distance of about 1,100 km. The line crosses the Strait of Belle Isle under the sea. It carries direct current for most of the route, and converter stations at each end change the electricity between direct current and the alternating current the grid uses. Each of these choices solved one problem and created another. Submarine cables avoid icebergs and winter storms but are expensive to lay and slow to repair. Direct current loses less energy over very long distances but needs costly converter stations. An overhead line on land is easier to reach for repairs but is exposed to ice, wind and long winter trips to remote sites.",
+  "strongResponse": "A strong response names the physical constraint behind each tradeoff, such as energy losses over distance or iceberg scour on the seabed, rather than reporting only that a choice was expensive, and the summary generalizes from the three examples instead of restating them.",
+  "timeBand": "30-45 min",
+  "title": "Every Choice Costs Something: Tradeoffs in the Labrador-Island Link",
+  "topics": [],
+  "unit": 3,
+  "unitName": "Fields"
+ },
+ {
+  "ask": "Write an analysis of the risks and benefits of PFAS, about two pages in length, from three perspectives: a manufacturer of waterproof outdoor clothing; a firefighter who trains with firefighting foam; and a resident whose well water is near a foam training site. For each perspective, connect at least one risk or benefit to the molecular properties of PFAS. Conclude by stating whether you would limit PFAS to uses where they are essential, and give your reasoning.",
+  "course": "chem-2202",
+  "courseName": "Chemistry 2202",
+  "devices": "none",
+  "extension": "Extension: research one product category where PFAS-free alternatives already exist and judge whether the benefit case for PFAS survives in that category.",
+  "grouping": "individual",
+  "groupingNote": "Written individually.",
+  "id": "stse-chem-2202-pfas",
+  "indicators": [
+   "9.2"
+  ],
+  "materialsNote": "The task text is the handout. No additional materials are required.",
+  "materialsTags": [
+   "Printed handout"
+  ],
+  "product": "A written analysis covering three perspectives, ending in a stated position.",
+  "productType": "Analysis",
+  "source": {
+   "kind": "original",
+   "label": "Authored for CDLI, November 2026"
+  },
+  "stimulus": "PFAS are a family of manufactured chemicals. Their molecular structure makes them resist heat, water, oil and stains, so they are used in non-stick cookware, waterproof clothing, food packaging and firefighting foams. The same strong bonds that make PFAS useful also make them extremely slow to break down in the environment and in the human body. PFAS have been found in water near airports and military bases where firefighting foam was used in training, including sites in this province.",
+  "strongResponse": "A strong response keeps the chemistry and the social analysis joined: persistence is a benefit in a rain jacket and a harm in a well, for the same molecular reason. The concluding position follows from the perspectives presented rather than floating free of them.",
+  "timeBand": "One period",
+  "title": "Forever Chemicals: The Risks and Benefits of PFAS",
+  "topics": [],
+  "unit": 2,
+  "unitName": "From Structures to Properties"
+ },
+ {
+  "ask": "First, set out the criteria you will use to judge the three designs. The criteria must be your own, but together they should cover how well a design works in cold water, its effects on marine life, its cost and availability in a small community, and what finally happens to the oil. Then evaluate each design against every one of your criteria, using what you know about the properties of hydrocarbons. Finish with a ranking of the three designs and a recommendation to the harbour master, justified by your evaluation.",
+  "course": "chem-2202",
+  "courseName": "Chemistry 2202",
+  "devices": "none",
+  "extension": "Extension: add a fourth response design of your own and evaluate it against your criteria. Does it change your ranking?",
+  "grouping": "either",
+  "groupingNote": "Pairs work well: partners can draft criteria together, then evaluate different designs and compare.",
+  "id": "stse-chem-2202-oil-spill-designs",
+  "indicators": [
+   "10.9"
+  ],
+  "materialsNote": "The task text is the handout. No additional materials are required.",
+  "materialsTags": [
+   "Printed handout"
+  ],
+  "product": "Your criteria, an evaluation of each design against each criterion, and a justified recommendation.",
+  "productType": "Evaluation",
+  "source": {
+   "kind": "original",
+   "label": "Authored for CDLI, November 2026"
+  },
+  "stimulus": "A fishing vessel has leaked diesel fuel in a harbour in Newfoundland and Labrador. Three response designs are available. Floating booms can corral the fuel so it can be skimmed from the surface. Sorbent pads made from treated fibres soak up oil but not water. A chemical dispersant can be sprayed on the slick to break it into small droplets that mix down into the water. Diesel is a mixture of hydrocarbons: it floats on water, spreads quickly into a thin layer, evaporates slowly in cold water, and is toxic to marine life.",
+  "strongResponse": "A strong response states its own criteria before judging, uses hydrocarbon properties (density, solubility, evaporation in cold water) as evidence inside the evaluation, and notices that dispersants do not remove oil but relocate it, which different criteria score very differently.",
+  "timeBand": "One period",
+  "title": "Judging the Cleanup: Evaluating Designs for an Oil Spill Response",
+  "topics": [],
+  "unit": 3,
+  "unitName": "Organic Chemistry"
+ },
+ {
+  "ask": "Write an analysis of how society influenced the science and technology of acid precipitation. Trace at least three distinct points where a social force (public concern, government regulation, an industry decision, or international negotiation) changed what scientists studied, what technology was built, or how quickly that technology was adopted. For each point, name the force, state what it changed, and identify the acid-base chemistry involved. End with one paragraph answering this question: could the emissions reductions have happened on the same timeline without the social pressure? Defend your answer.",
+  "course": "chem-3202",
+  "courseName": "Chemistry 3202",
+  "devices": "none",
+  "extension": "Extension: compare with a current issue, such as ocean acidification, and identify one social force playing the same role today.",
+  "grouping": "individual",
+  "groupingNote": "Written individually.",
+  "id": "stse-chem-3202-acid-rain",
+  "indicators": [
+   "10.4"
+  ],
+  "materialsNote": "The task text is the handout. No additional materials are required.",
+  "materialsTags": [
+   "Printed handout"
+  ],
+  "product": "A written analysis tracing three points of social influence, ending in a defended judgement.",
+  "productType": "Analysis",
+  "source": {
+   "kind": "original",
+   "label": "Authored for CDLI, November 2026"
+  },
+  "stimulus": "In the 1970s and 1980s, scientists documented acid precipitation damaging lakes and forests across eastern North America. Sulfur dioxide and nitrogen oxides released by power plants, refineries and vehicles reacted in the atmosphere to form acids, which fell in rain and snow. In this province, attention fell on large sources such as the Holyrood generating station and on acid-sensitive lakes and salmon rivers. Over the following decades, emissions fell sharply. The chemistry alone did not change policy. The change came through scientific monitoring programs, media coverage, pressure from affected communities and industries, an agreement between Canada and the United States, and regulations that capped emissions.",
+  "strongResponse": "A strong response attaches each social force to a specific chemical process or technology, such as flue gas scrubbers or low-sulfur fuel, and the closing paragraph weighs the counterfactual instead of assuming the science would have prevailed on its own.",
+  "timeBand": "One period",
+  "title": "Who Moved the Emissions? Society's Influence on the Acid Rain Story",
+  "topics": [],
+  "unit": 2,
+  "unitName": "Acids and Bases"
+ },
+ {
+  "ask": "Write a proposal to the town council setting out a course of action for the next ten years. Include at least three concrete steps, the order you would carry them out in, and the perspective of sustainability. For each step, state whose perspective it serves and whose it burdens. Use thermochemistry in your reasoning: compare, in approximate terms, the heat delivered per dollar or per unit of carbon dioxide emitted for at least two of the heating options. Keep the proposal to about two pages.",
+  "course": "chem-3202",
+  "courseName": "Chemistry 3202",
+  "devices": "none",
+  "extension": "Extension: cost your first step for one specific house in the town, using real local prices, and state whether the plan still works for that household.",
+  "grouping": "either",
+  "groupingNote": "Works individually or in pairs; the energy comparison benefits from paired checking.",
+  "id": "stse-chem-3202-heating-town",
+  "indicators": [
+   "11.3"
+  ],
+  "materialsNote": "The task text is the handout. No additional materials are required.",
+  "materialsTags": [
+   "Printed handout"
+  ],
+  "product": "A written proposal to the town council with sequenced steps, named perspectives, and a rough energy comparison.",
+  "productType": "Written brief",
+  "source": {
+   "kind": "original",
+   "label": "Authored for CDLI, November 2026"
+  },
+  "stimulus": "A town in Newfoundland and Labrador is reviewing how its homes are heated. Many houses burn fuel oil. Others use electric baseboard heaters, wood stoves, or heat pumps, which move heat from outside air into the house instead of making heat, and can deliver several units of heat for each unit of electricity they use. Burning one litre of fuel oil releases a fixed quantity of energy, and also carbon dioxide. The town wants a plan that lowers heating costs, cuts emissions, and keeps every home reliably warm through a Newfoundland winter. Residents disagree. Some cannot afford to replace a working furnace. Some heat with wood they cut themselves. The town's electrical system has limited spare capacity on the coldest nights.",
+  "strongResponse": "A strong response quantifies the heating comparison roughly and honestly, sequences its steps, names whose perspective each step serves and whose it burdens, and notices that a plan that works on an average winter night can still fail in the coldest week or for the lowest-income household.",
+  "timeBand": "2 periods",
+  "title": "Heating the Town: Proposing a Course of Action",
+  "topics": [],
+  "unit": 3,
+  "unitName": "Thermochemistry"
+ },
+ {
+  "ask": "You are advising a fisheries advisory panel. Propose a course of action for the northern cod fishery for the next five years. Your proposal must take into account an array of perspectives, including that of sustainability. Address at least these four: inshore harvesters; plant workers; fisheries scientists; and the ecosystem itself, represented by the evidence about capelin and predators. State your recommended approach to the catch (for example, no commercial fishery, a limited stewardship fishery, or a larger commercial fishery), the conditions you would attach to it, and what evidence, if it appeared, would make you change your recommendation.",
+  "course": "bio-2201",
+  "courseName": "Biology 2201",
+  "devices": "none",
+  "extension": "Extension: find the most recent northern cod stock assessment summary and check your conditions and evidence triggers against it.",
+  "grouping": "either",
+  "groupingNote": "Works individually or in pairs; also suits a small advisory group format.",
+  "id": "stse-bio-2201-northern-cod",
+  "indicators": [
+   "8.6"
+  ],
+  "materialsNote": "The task text is the handout. No additional materials are required.",
+  "materialsTags": [
+   "Printed handout"
+  ],
+  "product": "A written proposal to the panel with a recommended approach, conditions, and stated evidence that would change it.",
+  "productType": "Written brief",
+  "source": {
+   "kind": "original",
+   "label": "Authored for CDLI, November 2026"
+  },
+  "stimulus": "Northern cod off Newfoundland and Labrador collapsed in the early 1990s, and a moratorium on the commercial fishery began in 1992. The stock has rebuilt slowly and unevenly since. Cod sit in the middle of a food web: they eat capelin and shrimp, and they are eaten by seals and larger fish. Capelin, their main food, has strong ups and downs of its own. Any decision about fishing cod is therefore also a decision about jobs in coastal communities, about the capelin fishery, and about what the ecosystem can support in a changing ocean.",
+  "strongResponse": "A strong response grounds its recommendation in the food web evidence (capelin, predators, slow rebuilding), names the conditions attached to the catch, and states what new evidence would change the recommendation rather than simply defending a preferred catch level.",
+  "timeBand": "One period",
+  "title": "The Northern Cod: Proposing a Course of Action",
+  "topics": [],
+  "unit": 1,
+  "unitName": "Ecosystem Interactions and Population Dynamics"
+ },
+ {
+  "ask": "Analyze the risks and benefits of a school-based vaccination program from four perspectives: a parent deciding for a healthy 12-year-old; a public health nurse who runs the clinics; a student receiving treatment that suppresses the immune system; and a school administrator. For each perspective, identify the main risks and benefits as that person sees them, and connect at least one point to how the immune system works. Conclude with your own position: should the program be required, strongly encouraged, or left entirely to individual choice? Defend your position using points from at least two of the perspectives.",
+  "course": "bio-2201",
+  "courseName": "Biology 2201",
+  "devices": "none",
+  "extension": "Extension: examine how your position holds up in an outbreak year, when the risks on every side change at once.",
+  "grouping": "individual",
+  "groupingNote": "Written individually.",
+  "id": "stse-bio-2201-vaccination",
+  "indicators": [
+   "10.5"
+  ],
+  "materialsNote": "The task text is the handout. No additional materials are required.",
+  "materialsTags": [
+   "Printed handout"
+  ],
+  "product": "A written analysis covering four perspectives, ending in a defended position.",
+  "productType": "Analysis",
+  "source": {
+   "kind": "original",
+   "label": "Authored for CDLI, November 2026"
+  },
+  "stimulus": "Vaccines train the immune system to respond to a pathogen before a person meets it naturally. Newfoundland and Labrador offers vaccination through school-based programs and public health clinics. Most people who are vaccinated have only mild, short-lived side effects, such as a sore arm or a brief fever. Serious reactions are rare, but they are real. When vaccination rates in a community are high, people who cannot be vaccinated, such as newborn babies and some patients whose treatment suppresses the immune system, gain protection because the disease rarely reaches them.",
+  "strongResponse": "A strong response represents the hesitant parent's concerns accurately rather than as a caricature, connects at least one point per perspective to how the immune system works, and weighs the protection that high uptake gives to people who cannot be vaccinated and have no choice in the matter.",
+  "timeBand": "One period",
+  "title": "Vaccination: Risks and Benefits from Four Perspectives",
+  "topics": [],
+  "unit": 3,
+  "unitName": "Maintaining Dynamic Equilibrium"
+ },
+ {
+  "ask": "Analyze the risks and benefits of offering expanded carrier screening from four perspectives: a couple planning a first child; a genetic counsellor; the provincial health authority that would pay for the program; and a person living with one of the conditions on the screening panel. For each perspective, ground at least one risk or benefit in the genetics involved: inheritance patterns, what a carrier result does and does not mean, or the limits of testing. Finish with a recommendation to the health authority, including any conditions you would attach to the program.",
+  "course": "bio-3201",
+  "courseName": "Biology 3201",
+  "devices": "none",
+  "extension": "Extension: research how one other province or country runs carrier screening and compare its conditions with the ones you attached to your recommendation.",
+  "grouping": "individual",
+  "groupingNote": "Written individually.",
+  "id": "stse-bio-3201-carrier-screening",
+  "indicators": [
+   "9.7"
+  ],
+  "materialsNote": "The task text is the handout. No additional materials are required.",
+  "materialsTags": [
+   "Printed handout"
+  ],
+  "product": "A written analysis covering four perspectives, ending in a recommendation with conditions.",
+  "productType": "Analysis",
+  "source": {
+   "kind": "original",
+   "label": "Authored for CDLI, November 2026"
+  },
+  "stimulus": "Carrier screening tests can show whether prospective parents carry a recessive allele for a serious inherited condition, even though both parents are healthy. Screening for a small number of conditions is available now. Newer tests can screen for hundreds of conditions at once, and the cost keeps falling. A provincial health authority is deciding whether to offer expanded carrier screening to all prospective parents who want it. Results can guide real decisions about pregnancy and preparation. They can also produce anxiety, findings that are hard to interpret, and difficult choices. Because of this province's settlement history, some communities here carry higher rates of particular inherited conditions than the general population.",
+  "strongResponse": "A strong response is precise about what a carrier result does and does not mean, resists overstating what a negative result guarantees, and includes the perspective of a person living with a screened condition, which changes the framing of what counts as a benefit.",
+  "timeBand": "One period",
+  "title": "Knowing in Advance: Risks and Benefits of Carrier Screening",
+  "topics": [],
+  "unit": 2,
+  "unitName": "Genetic Basis of Heredity"
+ },
+ {
+  "ask": "Compare the risks and benefits to society and the environment of expanding salmon aquaculture on the south coast. Organize your comparison under three headings: effects on wild salmon and biodiversity; effects on coastal communities; and effects on the wider environment. Under each heading, set the main benefit against the main risk, and say which you judge to be stronger and why. Use at least two ideas from this unit in your reasoning, such as interbreeding and gene flow, selection, competition, or the spread of disease between populations. End with a one-paragraph position on whether expansion should go ahead.",
+  "course": "bio-3201",
+  "courseName": "Biology 3201",
+  "devices": "none",
+  "extension": "Extension: research land-based closed containment as a fourth option and place it in your comparison under the same three headings.",
+  "grouping": "either",
+  "groupingNote": "Works individually or in pairs.",
+  "id": "stse-bio-3201-salmon-aquaculture",
+  "indicators": [
+   "10.5"
+  ],
+  "materialsNote": "The task text is the handout. No additional materials are required.",
+  "materialsTags": [
+   "Printed handout"
+  ],
+  "product": "A structured comparison under three headings, ending in a stated position.",
+  "productType": "Analysis",
+  "source": {
+   "kind": "original",
+   "label": "Authored for CDLI, November 2026"
+  },
+  "stimulus": "Atlantic salmon are farmed in net pens along the south coast of Newfoundland and Labrador. The industry provides year-round jobs in communities that have lost other work. It also raises concerns. Farmed salmon escape from pens and can interbreed with wild salmon. Sea lice and disease can spread between the pens and wild fish. Waste from the pens settles on the seabed below. Wild Atlantic salmon populations on the south coast are already low, and the farmed fish are the same species as the wild fish, bred over generations for fast growth.",
+  "strongResponse": "A strong response compares like with like under each heading, uses unit ideas (gene flow between populations, selection under breeding, competition, disease transmission) as reasoning, and commits to a weighed judgement instead of listing benefits and risks in two separate piles.",
+  "timeBand": "30-45 min",
+  "title": "Farmed and Wild: Comparing the Risks and Benefits of Salmon Aquaculture",
+  "topics": [],
+  "unit": 3,
+  "unitName": "Evolutionary Change and Biodiversity"
+ },
+ {
+  "ask": "Evaluate the three designs against these criteria: safety; cost; availability; and impact on everyday life and the environment. For each design and each criterion, give a judgement and the reason for it, using what you know about friction. Present the evaluation in a table or in organized paragraphs. Then make a recommendation to the district: which design should the fleet use, and is there any condition under which you would change your recommendation?",
+  "course": "sci-1206",
+  "courseName": "Science 1206",
+  "devices": "none",
+  "extension": "Extension: repeat the evaluation for a passenger car that mostly drives in St. John's and note which judgements change, and why.",
+  "grouping": "either",
+  "groupingNote": "Works individually or in pairs; the criteria table suits paired work.",
+  "id": "stse-sci-1206-bus-tires",
+  "indicators": [
+   "SC10.7.13"
+  ],
+  "materialsNote": "The task text is the handout. No additional materials are required.",
+  "materialsTags": [
+   "Printed handout"
+  ],
+  "product": "A one-page evaluation of three designs against four criteria, ending in a recommendation.",
+  "productType": "Evaluation",
+  "source": {
+   "kind": "original",
+   "label": "Authored for CDLI, November 2026"
+  },
+  "stimulus": "A school district in Newfoundland and Labrador must choose winter tires for its bus fleet. Three designs are available: a standard winter tire with deep tread blocks; a studded winter tire, with metal studs set into the tread; and an all-weather tire, rated for winter use but also used through the rest of the year. Friction between the tire and the road is what lets a bus start moving, stop, and turn. Ice, packed snow, slush and bare pavement each grip a tire differently, and a single morning bus route in this province can include all four.",
+  "strongResponse": "A strong response judges every design against every criterion using friction, and notices that the best design on glare ice is not automatically the best design across a whole season of mixed conditions, pricing that into the recommendation.",
+  "timeBand": "30-45 min",
+  "title": "Which Tires for the School Bus? Evaluating a Design Against Set Criteria",
+  "topics": [],
+  "unit": 3,
+  "unitName": "Motion"
+ },
+ {
+  "ask": "Choose one of these three contributions, or another Canadian contribution connected to motion that your teacher agrees to. Research it and write an investigation brief of about one page that answers three questions. What problem was the inventor trying to solve? How does the technology work, in terms of motion and forces? What changed because it existed, in Canada and beyond? List at least two reliable sources at the end of your brief.",
+  "course": "sci-1206",
+  "courseName": "Science 1206",
+  "devices": "student",
+  "extension": "Extension: write two questions based on your research that a classmate could answer from your brief, and include the answers on a separate page.",
+  "grouping": "individual",
+  "groupingNote": "Researched and written individually. Briefs can be shared in a closing gallery or in short presentations.",
+  "id": "stse-sci-1206-canadian-contributions",
+  "indicators": [
+   "SC10.7.15"
+  ],
+  "materialsNote": "Students need research access and at least two reliable sources. A class set of reference books can substitute for part of the research.",
+  "materialsTags": [
+   "Internet access",
+   "Library resources"
+  ],
+  "product": "A one-page investigation brief answering the three questions, with sources listed.",
+  "productType": "Investigation report",
+  "source": {
+   "kind": "original",
+   "label": "Authored for CDLI, November 2026"
+  },
+  "stimulus": "Canadian inventors and engineers have built technologies that changed how people and goods move. Three examples. The snowmobile was developed by Joseph-Armand Bombardier in Quebec, who was driven by the problem of reaching help through winter snow after his young son died of an illness in a snowbound community. The Canadarm, a robotic arm built in Ontario for the space shuttle, moved astronauts and satellites in orbit. The snowblower was patented by Arthur Sicard of Montreal and cleared city streets that horse-drawn plows could not.",
+  "strongResponse": "A strong response explains the motion and the forces behind the technology, not just the inventor's story, connects the technology to the need that produced it, and identifies at least one effect its inventor did not foresee. Sources are reliable and listed.",
+  "timeBand": "2 periods",
+  "title": "Canadian Contributions Investigation Brief: Machines That Move Us",
+  "topics": [],
+  "unit": 3,
+  "unitName": "Motion"
+ },
+ {
+  "ask": "Choose three vehicles that a family in your region might realistically buy. Collect current secondary data for each one: purchase price, fuel consumption, estimated insurance, expected maintenance costs, and resale value after five years. Organize the data, and interpret it to estimate the total cost of owning each vehicle over five years, stating every assumption you make. Recommend the vehicle you judge to be the best investment in your region, and support the recommendation with your findings. Note any way in which a different family's circumstances could change the answer.",
+  "course": "math-2201",
+  "courseName": "Mathematics 2201",
+  "devices": "student",
+  "extension": "Extension: repeat the comparison for an electric vehicle, including home charging costs and any current purchase incentives, and state whether the recommendation changes.",
+  "grouping": "either",
+  "groupingNote": "The curriculum guide supports teams or independent work for inquiry projects. Pairs divide the data collection well.",
+  "id": "math-2201-inquiry-vehicle",
+  "indicators": [
+   "8.1",
+   "8.3",
+   "8.5"
+  ],
+  "materialsNote": "Current listings and fuel consumption ratings are available online. A spreadsheet makes the five-year comparison much easier to keep honest.",
+  "materialsTags": [
+   "Internet access",
+   "Calculator or spreadsheet"
+  ],
+  "product": "An investigation report recommending one vehicle, with the five-year cost comparison and the assumptions behind it.",
+  "productType": "Investigation report",
+  "source": {
+   "kind": "adapted",
+   "label": "Suggested project topics, Academic Mathematics 2201 Curriculum Guide (Department of Education, NL)"
+  },
+  "stimulus": "For most families in this province, a vehicle is one of the largest purchases they will make. The sticker price is only part of what a vehicle costs: fuel, insurance, maintenance and repairs, and what the vehicle can be sold for later all change the real cost over the years of ownership. Dealers and lenders advertise monthly payments, which can make an expensive vehicle look cheaper than it is.",
+  "strongResponse": "A strong response compares total cost of ownership rather than sticker price or monthly payment, uses current and reliable regional data, states its assumptions (distance driven per year, fuel price, ownership period), and reaches a recommendation that follows from the comparison, including a note on whose circumstances could change it.",
+  "timeBand": "Multi-day",
+  "title": "The Best Vehicle Investment in Our Region",
+  "topics": [],
+  "unit": 9,
+  "unitName": "Mathematics Inquiry"
+ },
+ {
+  "ask": "Research common skateboard ramp designs and the safety regulations that apply to them. Design one ramp and draw its blueprint to a scale factor you choose, labelling the real dimensions and the drawing dimensions. Then construct a scale model of your ramp at that scale factor. Measure the finished model, compare its dimensions with the blueprint, and account for any differences. Present your blueprint, your model, and a short report on how the design meets the safety requirements you found.",
+  "course": "math-2201",
+  "courseName": "Mathematics 2201",
+  "devices": "none",
+  "extension": "Extension: calculate the surface area of material a full-size version of your ramp would need, using the scale factor relationship for areas, and estimate what that material would cost.",
+  "grouping": "group",
+  "groupingNote": "Designed as a team build. A single student can complete a smaller model, but the construction stage is planned for a group.",
+  "id": "math-2201-inquiry-ramp",
+  "indicators": [
+   "8.1",
+   "8.3",
+   "8.5"
+  ],
+  "materialsNote": "Use the cutting tools your school permits. Stiff card or foam board holds a transition curve better than paper.",
+  "materialsTags": [
+   "Card or foam board",
+   "Ruler and measuring tape",
+   "Cutting and joining materials"
+  ],
+  "product": "A scale blueprint, a built scale model, and a short report comparing the model to the plan.",
+  "productType": "Design project",
+  "source": {
+   "kind": "adapted",
+   "label": "Suggested project topics, Academic Mathematics 2201 Curriculum Guide (Department of Education, NL)"
+  },
+  "stimulus": "Skateboard ramps are designed, not improvised. Regulations and design guides set out safe heights, transition shapes and run-out lengths, and builders work from drawings before they cut material. A scale blueprint lets a designer test the design on paper, and a scale model lets the team check the build before anyone rides it.",
+  "strongResponse": "A strong response applies one scale factor consistently in both directions (blueprint to model, and model back to real size), checks measured dimensions against the plan and explains discrepancies, and ties at least two design choices to the safety regulations found in the research.",
+  "timeBand": "Multi-day",
+  "title": "Skateboard Ramp: From Blueprint to Build",
+  "topics": [],
+  "unit": 9,
+  "unitName": "Mathematics Inquiry"
+ },
+ {
+  "ask": "Choose one claim that rests on data, from the media, an advertisement, or common belief in your school. Track down the data behind it, or the closest original source you can find. Assess the data: how was it collected, who collected it, is there bias or a point of view built into it, is it relevant to the claim, and does it agree with other sources on the same topic? Present the issue from more than one side, with the supporting data for each side. Finish with your judgement of how much trust the claim deserves, and what evidence would change your judgement.",
+  "course": "math-2201",
+  "courseName": "Mathematics 2201",
+  "devices": "student",
+  "extension": "Extension: if the claim comes from a survey, redesign the survey question or the collection method to remove the weakness you found, and explain the change.",
+  "grouping": "either",
+  "groupingNote": "",
+  "id": "math-2201-inquiry-data-audit",
+  "indicators": [
+   "8.2",
+   "8.4"
+  ],
+  "materialsNote": "Students need access to the original story or advertisement and to at least one independent source on the same topic.",
+  "materialsTags": [
+   "Internet access"
+  ],
+  "product": "A written audit of one claim, with the evidence on more than one side and a justified trust judgement.",
+  "productType": "Analysis",
+  "source": {
+   "kind": "adapted",
+   "label": "Focus for Learning for indicators 8.2 and 8.4, Academic Mathematics 2201 Curriculum Guide (Department of Education, NL)"
+  },
+  "stimulus": "Claims backed by numbers travel fast: in news stories, in advertisements, and in school hallways. One familiar example is the claim that students' marks are low because they play too many video games. A claim like that rests on data of some kind, collected somehow, by somebody, and the strength of the claim depends on all three.",
+  "strongResponse": "A strong response describes the actual collection method behind the numbers rather than judging the claim by how it sounds, names the bias or point of view where one exists, checks the data against an independent source, and presents the other side fairly before judging.",
+  "timeBand": "2 periods",
+  "title": "Trust the Data? Auditing a Claim",
+  "topics": [],
+  "unit": 9,
+  "unitName": "Mathematics Inquiry"
+ },
+ {
+  "ask": "Use the linear scale factor between Earth and the Moon to determine the relationship between their surface areas and between their volumes, showing the reasoning in full. Then check the pattern with a measurement: take two similar three-dimensional objects of different sizes (two balls, or a globe and a smaller sphere), measure them, and confirm that the surface area and volume relationships follow the same rule. Finish by explaining, in your own words, why area and volume do not scale the way most people first guess.",
+  "course": "math-2201",
+  "courseName": "Mathematics 2201",
+  "devices": "none",
+  "extension": "Extension: a scale model of Earth is built at 1 cm to 1000 km. Work out the model's diameter, and the diameter of a correctly scaled Moon model to sit beside it.",
+  "grouping": "either",
+  "groupingNote": "Pairs suit the measuring check; the write-up can be individual.",
+  "id": "math-2201-scale-moon-earth",
+  "indicators": [
+   "6.10",
+   "6.11",
+   "6.13",
+   "6.14"
+  ],
+  "materialsNote": "Two balls of clearly different sizes work well. A globe paired with a smaller sphere makes the Earth and Moon connection concrete.",
+  "materialsTags": [
+   "Calculator",
+   "Two similar 3-D objects",
+   "Measuring tape"
+  ],
+  "product": "A short report giving the surface area and volume ratios for the Moon and Earth, the reasoning behind them, and one measured check.",
+  "productType": "Investigation report",
+  "source": {
+   "kind": "adapted",
+   "label": "Nelson, Principles of Mathematics 11, Chapter 8 opener (Proportional Reasoning)"
+  },
+  "stimulus": "The diameter of the Moon is about one-quarter the diameter of Earth. Most people, asked how much smaller the Moon's surface is, or how much less volume it has, guess one-quarter for both. They are wrong, and the size of the error surprises almost everyone.",
+  "strongResponse": "A strong response squares the scale factor for surface area and cubes it for volume rather than applying it directly, carries the same rule through the measured objects, and explains the result in terms of what area and volume measure, not just the arithmetic.",
+  "timeBand": "30-45 min",
+  "title": "Moon and Earth: How Big Is the Difference?",
+  "topics": [
+   "Scale factor, surface area and volume"
+  ],
+  "unit": 6,
+  "unitName": "Proportional Reasoning"
+ },
+ {
+  "ask": "Find one news story that reports a survey result (your teacher may supply one). Identify the population the story makes claims about, the sample size, the reported result, and any margin of error or confidence level given. Work out the confidence interval the result actually supports, and judge whether the headline and the story's claims stay inside it. Then rewrite the headline so that it says only what the data supports, and defend your rewrite in a paragraph.",
+  "course": "math-2201",
+  "courseName": "Mathematics 2201",
+  "devices": "student",
+  "extension": "Extension: find a second story reporting the same survey and compare how the two headlines handle the same numbers.",
+  "grouping": "either",
+  "groupingNote": "",
+  "id": "math-2201-stats-headline",
+  "indicators": [
+   "8.20",
+   "8.21",
+   "8.22"
+  ],
+  "materialsNote": "If the teacher supplies a printed story, no devices are needed; otherwise students search for a current example.",
+  "materialsTags": [
+   "News story (online or printed)"
+  ],
+  "product": "A one-page critique of one reported survey, ending with a rewritten, defensible headline.",
+  "productType": "Analysis",
+  "source": {
+   "kind": "adapted",
+   "label": "CDLI Mathematics 2201 shell, Unit 5, Confidence Intervals in the Media"
+  },
+  "stimulus": "News stories report survey results in a single confident sentence: a percentage of the population supports this, opposes that, or plans to do the other. Behind the sentence sits a sample, usually far smaller than the population, and a margin of error that the headline rarely mentions. The same results can honestly support a much weaker headline than the one printed.",
+  "strongResponse": "A strong response separates the population claimed from the sample actually surveyed, computes the interval rather than quoting the margin of error loosely, and identifies any claim in the story that the interval does not support. The rewritten headline is weaker than the original in exactly the places the data is weaker.",
+  "timeBand": "One period",
+  "title": "Headline Check: Is That Survey Believable?",
+  "topics": [
+   "Confidence intervals and statistics in the media"
+  ],
+  "unit": 5,
+  "unitName": "Statistical Reasoning"
+ }
+];
+
+const GROUPING_LABEL = { individual: "Individual only", group: "Partner or group required", either: "Individual or group" };
+const DEVICES_LABEL = { none: "No devices", group: "One device per group", student: "One device per student" };
+const KIND_LABEL = { verbatim: "Verbatim", adapted: "Adapted", original: "Original" };
+
+const $ = (id) => document.getElementById(id);
+const els = { course: $("f-course"), unit: $("f-unit"), topic: $("f-topic"), topicWrap: $("wrap-topic"),
+  grouping: $("f-grouping"), devices: $("f-devices"), time: $("f-time"), ptype: $("f-ptype"), search: $("f-search"),
+  cards: $("cards"), count: $("result-count"), empty: $("empty"),
+  list: $("view-list"), detail: $("view-detail"), handout: $("view-handout") };
+
+function esc(s){ return String(s == null ? "" : s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function uniq(arr){ return Array.from(new Set(arr)); }
+function fillSelect(sel, values, allLabel, labelFn){
+  sel.innerHTML = "";
+  const o = document.createElement("option"); o.value = ""; o.textContent = allLabel; sel.appendChild(o);
+  values.forEach(v => { const op = document.createElement("option"); op.value = v; op.textContent = labelFn ? labelFn(v) : v; sel.appendChild(op); });
+}
+function courseTasks(){ const c = els.course.value; return c ? TASKS.filter(t => t.course === c) : TASKS; }
+
+function refreshUnitOptions(){
+  const ts = courseTasks();
+  const units = uniq(ts.map(t => t.unit)).sort((a,b) => a - b);
+  const cur = els.unit.value;
+  fillSelect(els.unit, units.map(String), "All units", u => { const t = ts.find(x => String(x.unit) === u); return "Unit " + u + ": " + t.unitName; });
+  if (units.map(String).includes(cur)) els.unit.value = cur;
+}
+function refreshTopicVisibility(){
+  const c = els.course.value;
+  const topics = c ? uniq(courseTasks().flatMap(t => t.topics || [])) : [];
+  if (c && topics.length){
+    els.topicWrap.hidden = false;
+    const cur = els.topic.value;
+    fillSelect(els.topic, topics.slice().sort(), "All topics");
+    if (topics.includes(cur)) els.topic.value = cur;
+  } else {
+    els.topicWrap.hidden = true;
+    els.topic.value = "";
+  }
+}
+function currentFilters(){
+  return { course: els.course.value, unit: els.unit.value, topic: els.topic.value,
+    grouping: els.grouping.value, devices: els.devices.value, time: els.time.value,
+    ptype: els.ptype.value, q: els.search.value.trim().toLowerCase() };
+}
+function matches(t, f){
+  if (f.course && t.course !== f.course) return false;
+  if (f.unit && String(t.unit) !== f.unit) return false;
+  if (f.topic && !(t.topics || []).includes(f.topic)) return false;
+  if (f.grouping && t.grouping !== f.grouping) return false;
+  if (f.devices && t.devices !== f.devices) return false;
+  if (f.time && t.timeBand !== f.time) return false;
+  if (f.ptype && t.productType !== f.ptype) return false;
+  if (f.q){
+    const hay = (t.title + " " + t.stimulus + " " + t.ask + " " + (t.indicators || []).join(" ") + " " + t.courseName).toLowerCase();
+    if (!hay.includes(f.q)) return false;
+  }
+  return true;
+}
+function chips(t){
+  let h = (t.indicators || []).map(c => '<span class="chip">' + esc(c) + "</span>").join("");
+  h += (t.topics || []).map(x => '<span class="chip topic">' + esc(x) + "</span>").join("");
+  return h;
+}
+function render(){
+  const f = currentFilters();
+  const shown = TASKS.filter(t => matches(t, f));
+  els.count.textContent = shown.length + (shown.length === 1 ? " task" : " tasks");
+  els.empty.hidden = shown.length > 0;
+  els.cards.innerHTML = shown.map(t =>
+    '<article class="card">' +
+      '<div class="courseline">' + esc(t.courseName) + " &middot; Unit " + t.unit + ": " + esc(t.unitName) + "</div>" +
+      "<h2>" + esc(t.title) + "</h2>" +
+      '<div class="chips">' + chips(t) + "</div>" +
+      '<div class="metastrip">' +
+        "<span><b>Time:</b> " + esc(t.timeBand) + "</span>" +
+        "<span><b>Grouping:</b> " + esc(GROUPING_LABEL[t.grouping]) + "</span>" +
+        "<span><b>Devices:</b> " + esc(DEVICES_LABEL[t.devices]) + "</span>" +
+        "<span><b>Materials:</b> " + esc((t.materialsTags || []).join(", ")) + "</span>" +
+      "</div>" +
+      '<p class="productline"><b>Product:</b> ' + esc(t.product) + "</p>" +
+      '<button class="open" type="button" data-open="' + esc(t.id) + '">View task</button>' +
+      '<div class="sourceline">Source: ' + esc(t.source.label) + " (" + esc(KIND_LABEL[t.source.kind]) + ")</div>" +
+    "</article>").join("");
+  els.cards.querySelectorAll("[data-open]").forEach(b => b.addEventListener("click", () => openDetail(b.getAttribute("data-open"))));
+}
+function show(view){
+  els.list.hidden = view !== "list";
+  els.detail.hidden = view !== "detail";
+  els.handout.hidden = view !== "handout";
+  window.scrollTo(0, 0);
+}
+function openDetail(id){
+  const t = TASKS.find(x => x.id === id); if (!t) return;
+  let h = '<div class="backrow no-print"><button class="btn secondary" type="button" id="d-back">Back to task list</button>' +
+    '<button class="btn" type="button" id="d-handout">Student handout</button></div>';
+  h += '<div class="detail"><div class="courseline">' + esc(t.courseName) + " &middot; Unit " + t.unit + ": " + esc(t.unitName) + "</div>";
+  h += "<h2>" + esc(t.title) + "</h2>";
+  h += '<div class="chips">' + chips(t) + "</div>";
+  h += '<div class="metapanel">' +
+    '<div><div class="k">Time</div><div class="v">' + esc(t.timeBand) + "</div></div>" +
+    '<div><div class="k">Grouping</div><div class="v">' + esc(GROUPING_LABEL[t.grouping]) + "</div></div>" +
+    '<div><div class="k">Devices</div><div class="v">' + esc(DEVICES_LABEL[t.devices]) + "</div></div>" +
+    '<div><div class="k">Product type</div><div class="v">' + esc(t.productType) + "</div></div>" +
+    '<div><div class="k">Materials</div><div class="v">' + esc((t.materialsTags || []).join(", ")) + "</div></div>";
+  if (t.materialsNote) h += '<div class="note"><b>Materials note:</b> ' + esc(t.materialsNote) + "</div>";
+  if (t.groupingNote) h += '<div class="note"><b>Grouping note:</b> ' + esc(t.groupingNote) + "</div>";
+  h += "</div>";
+  h += "<h3>The task</h3><p>" + esc(t.stimulus) + "</p><p>" + esc(t.ask) + "</p>";
+  h += '<div class="productbox"><b>Product:</b> ' + esc(t.product) + "</div>";
+  h += '<div class="teachbox"><h3>What a strong response shows (teacher guidance)</h3><p>' + esc(t.strongResponse) + "</p></div>";
+  if (t.extension) h += "<h3>Extension</h3><p>" + esc(t.extension) + "</p>";
+  h += '<p class="sourceline">Source: ' + esc(t.source.label) + " (" + esc(KIND_LABEL[t.source.kind]) + "). Indicators: " + esc((t.indicators || []).join(", ")) + ".</p>";
+  h += "</div>";
+  els.detail.innerHTML = h;
+  $("d-back").addEventListener("click", () => show("list"));
+  $("d-handout").addEventListener("click", () => openHandout(t.id));
+  show("detail");
+}
+function openHandout(id){
+  const t = TASKS.find(x => x.id === id); if (!t) return;
+  els.handout.innerHTML =
+    '<div class="backrow no-print"><button class="btn secondary" type="button" id="h-back">Back to task</button>' +
+    '<button class="btn" type="button" id="h-print">Print handout</button></div>' +
+    '<div class="handout"><h2>' + esc(t.title) + "</h2>" +
+    "<p>" + esc(t.stimulus) + "</p>" +
+    '<p class="hlabel">Your task</p><p>' + esc(t.ask) + "</p>" +
+    '<p class="hlabel">Product</p><p class="hproduct">' + esc(t.product) + "</p></div>";
+  $("h-back").addEventListener("click", () => openDetail(t.id));
+  $("h-print").addEventListener("click", () => { document.body.classList.add("printing-handout"); window.print(); document.body.classList.remove("printing-handout"); });
+  show("handout");
+}
+function clearFilters(){
+  els.course.value = ""; els.grouping.value = ""; els.devices.value = ""; els.time.value = ""; els.ptype.value = ""; els.search.value = "";
+  refreshUnitOptions(); refreshTopicVisibility(); els.unit.value = ""; render();
+}
+function init(){
+  const courses = uniq(TASKS.map(t => t.course));
+  fillSelect(els.course, courses, "All courses", c => TASKS.find(t => t.course === c).courseName);
+  fillSelect(els.grouping, ["individual","group","either"], "Any grouping", v => GROUPING_LABEL[v]);
+  fillSelect(els.devices, ["none","group","student"], "Any devices", v => DEVICES_LABEL[v]);
+  fillSelect(els.time, uniq(TASKS.map(t => t.timeBand)), "Any time");
+  fillSelect(els.ptype, uniq(TASKS.map(t => t.productType)).sort(), "Any product type");
+  refreshUnitOptions(); refreshTopicVisibility(); render();
+  els.course.addEventListener("change", () => { refreshUnitOptions(); refreshTopicVisibility(); els.unit.value = ""; render(); });
+  [els.unit, els.topic, els.grouping, els.devices, els.time, els.ptype].forEach(s => s.addEventListener("change", render));
+  els.search.addEventListener("input", render);
+  $("clear-filters").addEventListener("click", clearFilters);
+  $("clear-filters-2").addEventListener("click", clearFilters);
+}
+init();
+</script>
+</body>
+</html>
