@@ -95,9 +95,29 @@
   <section id="view-prompt" class="hidden">
     <div class="card">
       <h2>Your Gemini prompt</h2>
-      <p class="muted">Open a fresh Gemini chat, paste this whole prompt as one message, and send it. Then paste Gemini's reply in the box below and render the lesson.</p>
+      <p class="muted">Either use one-click drafting below, or open a fresh Gemini chat, paste this whole prompt as one message, and send it. Then paste Gemini's reply in the box below and render the lesson.</p>
       <textarea class="promptbox" id="prompt-out" readonly></textarea>
       <button class="btn" id="copy-prompt">Copy the prompt</button>
+      <div class="indlist" style="margin-top:12px">
+        <b>One-click drafting (optional).</b> Paste a Gemini API key from Google AI Studio (aistudio.google.com/apikey) once, and the planner drafts in place. The key is stored only in this browser, and the prompts carry no student information.
+        <label for="api-key">Gemini API key</label>
+        <input type="password" id="api-key" placeholder="AIza..." autocomplete="off">
+        <label for="api-model">Model</label>
+        <select id="api-model">
+          <option value="gemini-3.8-flash">Gemini 3.8 Flash</option>
+          <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+          <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+        </select>
+        <div style="margin-top:8px">
+          <button class="btn small" id="save-key" type="button">Save key</button>
+          <button class="btn small secondary" id="forget-key" type="button">Forget key</button>
+          <span class="muted" id="key-status"></span>
+        </div>
+        <div style="margin-top:6px">
+          <button class="btn" id="draft-api" type="button">Draft with Gemini</button>
+          <span class="muted" id="draft-status"></span>
+        </div>
+      </div>
       <h3>Gemini's reply</h3>
       <textarea class="returnbox" id="return-in" placeholder="Paste Gemini's lesson here, unedited."></textarea>
       <button class="btn" id="render-lesson">Render the lesson</button>
@@ -431,7 +451,7 @@ $("build-prompt").addEventListener("click", () => {
   $("prompt-out").value = FRAME + "\n\n" + buildData(); show("view-prompt");
 });
 $("copy-prompt").addEventListener("click", () => { $("prompt-out").select(); if (navigator.clipboard) navigator.clipboard.writeText($("prompt-out").value); else document.execCommand("copy"); $("copy-prompt").textContent = "Copied"; setTimeout(() => $("copy-prompt").textContent = "Copy the prompt", 1500); });
-$("render-lesson").addEventListener("click", () => {
+function doRender(){
   const ret = $("return-in").value.trim(); if (!ret) return;
   S.currentReturn = ret;
   const a = getLessons(); const L = { id: Date.now(), when: new Date().toLocaleString("en-CA"), label: S.lastLabel || "Lesson", ret, reflection: null };
@@ -439,7 +459,8 @@ $("render-lesson").addEventListener("click", () => {
   $("lesson-out").innerHTML = renderReturn(ret);
   loadKatex(() => { try { renderMathInElement($("lesson-out"), { delimiters: [ {left:"$$",right:"$$",display:true}, {left:"$",right:"$",display:false} ] }); } catch(e){} });
   renderSaved(); show("view-lesson");
-});
+}
+$("render-lesson").addEventListener("click", doRender);
 $("lesson-home").addEventListener("click", () => show("view-home"));
 $("reflect-back").addEventListener("click", () => show("view-lesson"));
 $("to-reflect").addEventListener("click", () => {
@@ -461,6 +482,37 @@ $("save-reflect").addEventListener("click", () => {
   renderSaved();
   if (S.seed) openSetup(S.seed); else show("view-home");
 });
+function refreshKeyStatus(){
+  const k = localStorage.getItem("plannerGeminiKey");
+  $("key-status").textContent = k ? "Key saved in this browser." : "No key saved.";
+  if (k && !$("api-key").value) $("api-key").value = k;
+  const m = localStorage.getItem("plannerGeminiModel"); if (m) $("api-model").value = m;
+}
+$("save-key").addEventListener("click", () => { const k = $("api-key").value.trim(); if (k) localStorage.setItem("plannerGeminiKey", k); localStorage.setItem("plannerGeminiModel", $("api-model").value); refreshKeyStatus(); });
+$("forget-key").addEventListener("click", () => { localStorage.removeItem("plannerGeminiKey"); $("api-key").value = ""; refreshKeyStatus(); });
+$("api-model").addEventListener("change", () => localStorage.setItem("plannerGeminiModel", $("api-model").value));
+async function draftWithGemini(){
+  const key = $("api-key").value.trim() || localStorage.getItem("plannerGeminiKey") || "";
+  const st = $("draft-status");
+  if (!key){ st.textContent = "Add your Gemini API key above first (free from Google AI Studio), or use the copy and paste route."; $("api-key").focus(); return; }
+  localStorage.setItem("plannerGeminiKey", key);
+  const model = $("api-model").value;
+  const btn = $("draft-api"); btn.disabled = true; btn.textContent = "Drafting..."; st.textContent = "Sending the prompt to Gemini. A full lesson can take half a minute.";
+  try {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, { method: "POST", headers: { "x-goog-api-key": key, "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts: [{ text: $("prompt-out").value }] }], generationConfig: { maxOutputTokens: 8192 } }) });
+    const data = await res.json();
+    if (!res.ok) throw new Error((data.error && data.error.message) || ("HTTP " + res.status));
+    const parts = (((data.candidates || [])[0] || {}).content || {}).parts || [];
+    const text = parts.map(p => p.text || "").join("");
+    if (!text) throw new Error("Gemini returned no text. Try again, or use the copy and paste route.");
+    $("return-in").value = text;
+    st.textContent = "Draft received.";
+    doRender();
+  } catch(e){ st.textContent = "Drafting failed: " + e.message + " The copy and paste route below still works."; }
+  btn.disabled = false; btn.textContent = "Draft with Gemini";
+}
+$("draft-api").addEventListener("click", draftWithGemini);
+refreshKeyStatus();
 renderSaved();
 </script>
 </body>
