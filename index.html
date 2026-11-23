@@ -58,19 +58,30 @@
   .handout p{ margin:0 0 12px; max-width:75ch; }
   .handout .hlabel{ font-weight:700; margin:16px 0 4px; }
   .handout .hproduct{ border:1px solid #999; padding:9px 12px; }
+  .planner{ background:#fff; border:1px solid var(--line); border-radius:8px; padding:26px 28px; margin-top:22px; color:#222; }
+  .planner h2{ color:#111; margin:0 0 6px; font-size:1.3rem; }
+  .planner h3{ margin:20px 0 6px; font-size:1.02rem; color:#111; }
+  .planner .pintro{ margin:0 0 8px; max-width:75ch; }
+  .planner .prompt{ margin:10px 0 2px; font-weight:600; }
+  .planner .wline{ border-bottom:1px solid #bbb; height:26px; }
+  .planner table{ border-collapse:collapse; width:100%; margin:8px 0; }
+  .planner th, .planner td{ border:1px solid #999; padding:7px 8px; text-align:left; vertical-align:top; font-size:.92rem; color:#222; }
+  .planner td{ height:46px; }
+  .planner .check{ margin:5px 0; }
   footer.app{ max-width:1060px; margin:0 auto; padding:0 16px 30px; color:var(--muted); font-size:.85rem; }
   @media print{
     body.printing-handout header.app, body.printing-handout .draftbar, body.printing-handout footer.app,
     body.printing-handout #view-list, body.printing-handout #view-detail, body.printing-handout .no-print{ display:none !important; }
     body.printing-handout main{ padding:0; max-width:none; }
     body.printing-handout .handout{ border:none; border-radius:0; padding:0; }
+    body.printing-handout .planner{ page-break-before:always; border:none; border-radius:0; padding:0; margin-top:0; }
   }
 </style>
 </head>
 <body>
 <header class="app">
   <h1>CDLI Rich Tasks</h1>
-  <p>Open production tasks for classroom use, organized by course, unit and indicator. Every task states its materials, time and grouping on its face. Select a task to see the full text and a printable student handout.</p>
+  <p>Open production tasks for classroom use, organized by course, unit and indicator. Every task states its materials, time and grouping on its face. Select a task to see the full text and a printable student handout, with an optional planning scaffold for each product type.</p>
 </header>
 <div class="draftbar">Draft collection: this seed version is under review and is not yet listed in the CDLI applications index.</div>
 
@@ -187,6 +198,7 @@ const TASKS = [
   "stimulus": "Newfoundland and Labrador Hydro is studying whether to add a large wind farm to the island's electricity system. A wind turbine generates electricity by electromagnetic induction: as the blades turn, magnets and coils move past each other and convert the energy of the turning rotor into electrical energy. The island grid must match supply to demand at every moment, and wind output rises and falls with the weather. Hydro's hydroelectric plants can adjust their output quickly, and subsea cables now connect the island to Labrador and to Nova Scotia.",
   "strongResponse": "A strong response states one clear recommendation, supports it with evidence that uses the Fields content (induction, generation, grid behaviour), recognizes at least two other perspectives, and answers the strongest opposing argument instead of ignoring it. The brief format rewards selection over listing.",
   "integrity": "Have students commit to their recommendation and their three pieces of evidence in class, in writing, before the brief is drafted. Spot-check a few students orally: ask for the strongest argument against their recommendation and their answer to it. A brief whose position differs from the in-class statement is a conversation worth having, not a crisis.",
+  "audience": "The brief is addressed to a review panel. When the setting allows, give it one: another class, a school administrator, or a guest from the energy sector, in the room or by video call, who reads the briefs and puts one question to each writer. The question matters more than the ceremony; a student who has answered a real reader once writes the next brief differently. When no panel is available, the simulated panel in the task still stands.",
   "timeBand": "One period",
   "title": "Decision Brief: Adding Wind Generation to the Island Grid",
   "topics": [],
@@ -280,6 +292,7 @@ const TASKS = [
   "stimulus": "A fishing vessel has leaked diesel fuel in a harbour in Newfoundland and Labrador. Three response designs are available. Floating booms can corral the fuel so it can be skimmed from the surface. Sorbent pads made from treated fibres soak up oil but not water. A chemical dispersant can be sprayed on the slick to break it into small droplets that mix down into the water. Diesel is a mixture of hydrocarbons: it floats on water, spreads quickly into a thin layer, evaporates slowly in cold water, and is toxic to marine life.",
   "strongResponse": "A strong response states its own criteria before judging, uses hydrocarbon properties (density, solubility, evaporation in cold water) as evidence inside the evaluation, and notices that dispersants do not remove oil but relocate it, which different criteria score very differently.",
   "integrity": "Fix the criteria in class first, collected or photographed before any evaluation is written; criteria invented after seeing a model answer read differently. The evaluation and ranking can be done outside class against those fixed criteria. Ask orally why the top-ranked design loses on at least one criterion; a real evaluation always has one.",
+  "audience": "The recommendation is addressed to the harbour master. When the setting allows, put a real decision-maker at the end of it: a local harbour authority contact, a fisheries officer, or a teacher panel that answers with a decision and its reasons, shared with the class. A recommendation that receives a decision, even a simulated one delivered in role, is judged by students against a real standard. When no respondent is available, the harbour master framing still gives the evaluation a reader.",
   "timeBand": "One period",
   "title": "Judging the Cleanup: Evaluating Designs for an Oil Spill Response",
   "topics": [],
@@ -342,6 +355,7 @@ const TASKS = [
   "stimulus": "A town in Newfoundland and Labrador is reviewing how its homes are heated. Many houses burn fuel oil. Others use electric baseboard heaters, wood stoves, or heat pumps, which move heat from outside air into the house instead of making heat, and can deliver several units of heat for each unit of electricity they use. Burning one litre of fuel oil releases a fixed quantity of energy, and also carbon dioxide. The town wants a plan that lowers heating costs, cuts emissions, and keeps every home reliably warm through a Newfoundland winter. Residents disagree. Some cannot afford to replace a working furnace. Some heat with wood they cut themselves. The town's electrical system has limited spare capacity on the coldest nights.",
   "strongResponse": "A strong response quantifies the heating comparison roughly and honestly, sequences its steps, names whose perspective each step serves and whose it burdens, and notices that a plan that works on an average winter night can still fail in the coldest week or for the lowest-income household.",
   "integrity": "Anchor the comparison in a figure the student brings from home: a heating bill, a current fuel price, or the system in their own house, recorded in class. Mark the comparison against that figure rather than a generic one. The steps can be drafted outside class, but ask orally which step burdens the lowest-income household most; that answer is hard to borrow.",
+  "audience": "The proposal is addressed to a town council. When the setting allows, make the address real: send a set of the class's proposals, or one combined summary, to the actual municipal council or a committee of it, and invite a reply, even a short one. A reply, however brief, is what turns the audience from a framing device into a standard students write toward. When sending is not practical, keep the council framing and say plainly that it is a simulation.",
   "timeBand": "2 periods",
   "title": "Heating the Town: Proposing a Course of Action",
   "topics": [],
@@ -373,6 +387,7 @@ const TASKS = [
   "stimulus": "Northern cod off Newfoundland and Labrador collapsed in the early 1990s, and a moratorium on the commercial fishery began in 1992. The stock has rebuilt slowly and unevenly since. Cod sit in the middle of a food web: they eat capelin and shrimp, and they are eaten by seals and larger fish. Capelin, their main food, has strong ups and downs of its own. Any decision about fishing cod is therefore also a decision about jobs in coastal communities, about the capelin fishery, and about what the ecosystem can support in a changing ocean.",
   "strongResponse": "A strong response grounds its recommendation in the food web evidence (capelin, predators, slow rebuilding), names the conditions attached to the catch, and states what new evidence would change the recommendation rather than simply defending a preferred catch level.",
   "integrity": "Have the recommendation and its conditions committed in writing in class before the proposal is drafted; positions on the cod are easy to generate and hard to defend. Use the student's own change-of-mind clause as the oral check: ask what evidence would change their recommendation and why that evidence would matter. Generic answers rarely survive that question.",
+  "audience": "The proposal is addressed to a fisheries advisory panel. When the setting allows, convene one: a harvester, a fisheries scientist, or a DFO contact, in person or by video call, to hear two or three proposals and push back with questions. The pushback is the value; students revise differently after a real stakeholder has challenged a condition. If no panel can be convened, a teacher-led panel that stays in role is a workable substitute.",
   "timeBand": "One period",
   "title": "The Northern Cod: Proposing a Course of Action",
   "topics": [],
@@ -435,6 +450,7 @@ const TASKS = [
   "stimulus": "Carrier screening tests can show whether prospective parents carry a recessive allele for a serious inherited condition, even though both parents are healthy. Screening for a small number of conditions is available now. Newer tests can screen for hundreds of conditions at once, and the cost keeps falling. A provincial health authority is deciding whether to offer expanded carrier screening to all prospective parents who want it. Results can guide real decisions about pregnancy and preparation. They can also produce anxiety, findings that are hard to interpret, and difficult choices. Because of this province's settlement history, some communities here carry higher rates of particular inherited conditions than the general population.",
   "strongResponse": "A strong response is precise about what a carrier result does and does not mean, resists overstating what a negative result guarantees, and includes the perspective of a person living with a screened condition, which changes the framing of what counts as a benefit.",
   "integrity": "Before drafting, have each student write in class one sentence on what a carrier result does and does not mean; precision there is the core of the task, and that sentence, written in the room, is what the analysis stands on. The four perspectives can be drafted outside class. Orally, ask what a negative result does not guarantee; a student who did the work answers without hesitation.",
+  "audience": "The recommendation is addressed to the provincial health authority. When the setting allows, have students present their recommendations to a small panel, a public health guest if one is available, or teachers in role, that responds as the authority would: what it would fund, what it would not, and why. Hearing a recommendation accepted with conditions, or declined with reasons, teaches more about the audience than the writing alone. Simulated is fine when a panel is not available.",
   "timeBand": "One period",
   "title": "Knowing in Advance: Risks and Benefits of Carrier Screening",
   "topics": [],
@@ -497,6 +513,7 @@ const TASKS = [
   "stimulus": "A school district in Newfoundland and Labrador must choose winter tires for its bus fleet. Three designs are available: a standard winter tire with deep tread blocks; a studded winter tire, with metal studs set into the tread; and an all-weather tire, rated for winter use but also used through the rest of the year. Friction between the tire and the road is what lets a bus start moving, stop, and turn. Ice, packed snow, slush and bare pavement each grip a tire differently, and a single morning bus route in this province can include all four.",
   "strongResponse": "A strong response judges every design against every criterion using friction, and notices that the best design on glare ice is not automatically the best design across a whole season of mixed conditions, pricing that into the recommendation.",
   "integrity": "Run the evaluation table in class against the three designs as presented in the room; the judgements are quick and the friction reasoning is visible as it happens. The recommendation can be written afterward. Ask orally which design wins on glare ice alone and why it does not automatically win the whole season; that distinction is the task's real test.",
+  "audience": "The recommendation is addressed to the school district. When the setting allows, send it: district transportation offices do answer well-made student recommendations, and a reply closes the loop in a way no classroom exercise can. If sending is not practical, present the recommendations to school administration instead. Either way, tell students before they write who will actually receive it; the writing changes when the reader is named and real.",
   "timeBand": "30-45 min",
   "title": "Which Tires for the School Bus? Evaluating a Design Against Set Criteria",
   "topics": [],
@@ -802,10 +819,66 @@ function show(view){
   els.handout.hidden = view !== "handout";
   window.scrollTo(0, 0);
 }
+
+const PLANNERS = {
+ "Analysis": { sections: [
+   { h: "The perspectives", table: { head: ["Perspective", "What they want, and what they fear", "Their strongest point", "Evidence or reasoning behind it"], rows: 4 } },
+   { h: "Weighing it up", prompts: [ ["The strongest point on one side:", 2], ["The strongest point on the other side:", 2], ["My conclusion, and any condition I attach to it:", 3] ] },
+   { h: "Before I hand it in", checks: ["Each perspective is stated the way its holder would state it.", "Science claims and money claims are kept separate.", "My conclusion uses points I actually made above.", "I answered the strongest point against my conclusion."] }
+ ] },
+ "Written brief": { sections: [
+   { h: "My recommendation", prompts: [ ["My recommendation, in one sentence:", 2] ] },
+   { h: "Evidence that carries it", prompts: [ ["First piece of evidence, and why it should convince my audience:", 2], ["Second piece of evidence, and why it should convince my audience:", 2], ["Third piece of evidence, and why it should convince my audience:", 2] ] },
+   { h: "The other side", prompts: [ ["The strongest argument against my recommendation:", 2], ["My answer to it:", 3] ] },
+   { h: "Selection", prompts: [ ["What I am leaving out, and why it does not change the recommendation:", 2] ] },
+   { h: "Before I hand it in", checks: ["My recommendation is stated once, clearly, near the start.", "Every piece of evidence connects to the recommendation.", "I answered the strongest opposing argument instead of ignoring it.", "A reader who disagrees could still follow my reasoning."] }
+ ] },
+ "Evaluation": { sections: [
+   { h: "My criteria, fixed before I judge", note: "Write these before you evaluate any design. Changing them afterwards changes the evaluation.", table: { head: ["Criterion", "What good looks like on this criterion"], rows: 4 } },
+   { h: "Judgements", table: { head: ["Design", "Criterion", "Judgement", "Evidence for it"], rows: 6 } },
+   { h: "The recommendation", prompts: [ ["Where my top-ranked design loses, and on which criterion:", 2], ["My recommendation:", 2], ["The condition under which I would change it:", 2] ] },
+   { h: "Before I hand it in", checks: ["My criteria were set before I judged.", "Every design was judged against every criterion.", "Each judgement names evidence, not just a score.", "My recommendation follows from the table, including where my choice loses."] }
+ ] },
+ "Investigation report": { sections: [
+   { h: "My question", prompts: [ ["The question I am investigating:", 2] ] },
+   { h: "Evidence I need", prompts: [ ["What I need to find out:", 2], ["Where I will get it (name the sources):", 2], ["How I will know a source is reliable:", 2] ] },
+   { h: "What the evidence shows", prompts: [ ["The key figures or findings, with their sources:", 4], ["Assumptions I am making:", 2] ] },
+   { h: "My conclusion", prompts: [ ["My recommendation or conclusion:", 2], ["What evidence would change it:", 2] ] },
+   { h: "Before I hand it in", checks: ["I compared totals or patterns, not single numbers out of context.", "Every figure has a source I can point to.", "My assumptions are stated, not hidden.", "My conclusion follows from the evidence I collected."] }
+ ] },
+ "Design project": { sections: [
+   { h: "The need and the rules", prompts: [ ["What this design has to do:", 2], ["Safety rules and constraints that apply:", 3] ] },
+   { h: "My design decisions", prompts: [ ["First decision, and why:", 2], ["Second decision, and why:", 2], ["Third decision, and why:", 2], ["My scale, and what it means for the model:", 2] ] },
+   { h: "Build and measure", table: { head: ["Part", "Planned measurement", "Actual measurement", "Difference, and why"], rows: 4 } },
+   { h: "Before I hand it in", checks: ["My blueprint is labelled with real and drawing dimensions.", "I measured the finished model myself.", "I can explain my largest difference.", "I checked the design against the safety rules I found."] }
+ ] }
+};
+function plannerHTML(t){
+  const p = PLANNERS[t.productType]; if (!p) return "";
+  let h = '<div class="planner"><h2>Planning scaffold: ' + esc(t.productType) + "</h2>";
+  h += '<p class="pintro">For: ' + esc(t.title) + ". Plan before you write. Fill this in first; your finished piece should grow out of it. If you no longer need it, set it aside; it is a support, not a requirement.</p>";
+  h += '<p class="prompt">Who will actually read or hear this, and what do they need from me?</p><div class="wline"></div><div class="wline"></div>';
+  h += '<p class="prompt">My goal for this piece, in one sentence:</p><div class="wline"></div><div class="wline"></div>';
+  p.sections.forEach(s => {
+    h += "<h3>" + esc(s.h) + "</h3>";
+    if (s.note) h += '<p class="pintro">' + esc(s.note) + "</p>";
+    if (s.table){
+      h += "<table><tr>" + s.table.head.map(c => "<th>" + esc(c) + "</th>").join("") + "</tr>";
+      for (let i = 0; i < s.table.rows; i++) h += "<tr>" + s.table.head.map(() => "<td></td>").join("") + "</tr>";
+      h += "</table>";
+    }
+    (s.prompts || []).forEach(pr => { h += '<p class="prompt">' + esc(pr[0]) + "</p>"; for (let i = 0; i < pr[1]; i++) h += '<div class="wline"></div>'; });
+    (s.checks || []).forEach(c => { h += '<p class="check">&#9744; ' + esc(c) + "</p>"; });
+  });
+  h += '<p class="prompt">One thing I will do when I get stuck:</p><div class="wline"></div>';
+  h += "</div>";
+  return h;
+}
 function openDetail(id){
   const t = TASKS.find(x => x.id === id); if (!t) return;
   let h = '<div class="backrow no-print"><button class="btn secondary" type="button" id="d-back">Back to task list</button>' +
-    '<button class="btn" type="button" id="d-handout">Student handout</button></div>';
+    '<button class="btn" type="button" id="d-handout">Student handout</button>' +
+    '<button class="btn secondary" type="button" id="d-planner">Handout with planner</button></div>';
   h += '<div class="detail"><div class="courseline">' + esc(t.courseName) + " &middot; Unit " + t.unit + ": " + esc(t.unitName) + "</div>";
   h += "<h2>" + esc(t.title) + "</h2>";
   h += '<div class="chips">' + chips(t) + "</div>";
@@ -822,15 +895,17 @@ function openDetail(id){
   h += '<div class="productbox"><b>Product:</b> ' + esc(t.product) + "</div>";
   h += '<div class="teachbox"><h3>What a strong response shows (teacher guidance)</h3><p>' + esc(t.strongResponse) + "</p></div>";
   if (t.integrity) h += '<div class="teachbox"><h3>Running it with integrity (teacher guidance)</h3><p>' + esc(t.integrity) + "</p></div>";
+  if (t.audience) h += '<div class="teachbox"><h3>Making the audience real (teacher guidance)</h3><p>' + esc(t.audience) + "</p></div>";
   if (t.extension) h += "<h3>Extension</h3><p>" + esc(t.extension) + "</p>";
   h += '<p class="sourceline">Source: ' + esc(t.source.label) + " (" + esc(KIND_LABEL[t.source.kind]) + "). Indicators: " + esc((t.indicators || []).join(", ")) + ".</p>";
   h += "</div>";
   els.detail.innerHTML = h;
   $("d-back").addEventListener("click", () => show("list"));
   $("d-handout").addEventListener("click", () => openHandout(t.id));
+  $("d-planner").addEventListener("click", () => openHandout(t.id, true));
   show("detail");
 }
-function openHandout(id){
+function openHandout(id, withPlanner){
   const t = TASKS.find(x => x.id === id); if (!t) return;
   els.handout.innerHTML =
     '<div class="backrow no-print"><button class="btn secondary" type="button" id="h-back">Back to task</button>' +
@@ -838,7 +913,7 @@ function openHandout(id){
     '<div class="handout"><h2>' + esc(t.title) + "</h2>" +
     "<p>" + esc(t.stimulus) + "</p>" +
     '<p class="hlabel">Your task</p><p>' + esc(t.ask) + "</p>" +
-    '<p class="hlabel">Product</p><p class="hproduct">' + esc(t.product) + "</p></div>";
+    '<p class="hlabel">Product</p><p class="hproduct">' + esc(t.product) + "</p></div>" + (withPlanner ? plannerHTML(t) : "");
   $("h-back").addEventListener("click", () => openDetail(t.id));
   $("h-print").addEventListener("click", () => { document.body.classList.add("printing-handout"); window.print(); document.body.classList.remove("printing-handout"); });
   show("handout");
