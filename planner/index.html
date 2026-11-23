@@ -127,6 +127,11 @@
 
   <section id="view-lesson" class="hidden">
     <div class="card lesson" id="lesson-out"></div>
+    <div class="card hidden" id="links-card">
+      <h2>Review Apps sets for this lesson</h2>
+      <div id="links-out"></div>
+      <p class="muted">Each link opens the Review Apps with the set already dealt. The seed in the link means everyone who opens it gets the same questions.</p>
+    </div>
     <div class="card noprint">
       <button class="btn" id="to-reflect">Complete the reflection</button>
       <button class="btn secondary" onclick="window.print()">Print the lesson</button>
@@ -303,6 +308,45 @@ function renderEvidenceNote(){
 }
 
 function withEvidence(d){ if (S.evidence) d += `\n\nReflection evidence from the previous lesson on this seed:\n${S.evidence}`; return d; }
+function raLink(unit, inds, count, seed){ return `https://cdli-nlschools.github.io/ReviewApps/?course=math-2201&unit=${unit}&indicator=${inds.map(encodeURIComponent).join(",")}&count=${count}&seed=${encodeURIComponent(seed)}`; }
+function computeLinks(){
+  const L = [];
+  if (S.seed === "topic" || S.seed === "question"){
+    const { u, idx, t, list } = currentTopic();
+    if (S.seed === "topic"){
+      const inds = t.indicators.filter(c => DATA.families[c]);
+      if (inds.length){
+        const exitN = Math.min(2 * inds.length, 8);
+        L.push({ label: `Practice set: ${t.title}`, url: raLink(u, inds, 10, "planner-practice-" + inds.join("-")), note: `10 questions across indicators ${inds.join(", ")}` });
+        L.push({ label: "Exit check sample", url: raLink(u, inds, exitN, "planner-exit-" + inds.join("-")), note: `${exitN} questions, about 2 per indicator` });
+        L.push({ label: "Follow-up practice sample", url: raLink(u, inds, 6, "planner-followup-" + inds.join("-")), note: "6 questions across the topic's indicators" });
+      }
+    } else {
+      const c = $("s-ind").value, f = DATA.families[c];
+      if (f){
+        const prev = idx > 0 ? list[idx - 1] : null, next = idx < list.length - 1 ? list[idx + 1] : null;
+        const ext = prev && prev.indicators.length ? prev.indicators[0] : (next && next.indicators.length ? next.indicators[0] : null);
+        L.push({ label: `Practice set: indicator ${c}`, url: raLink(u, [c], 8, "planner-practice-" + c), note: `8 questions from the ${c} question family` });
+        L.push({ label: "Exit check sample", url: raLink(u, [c], 3, "planner-exit-" + c), note: `3 questions on ${c}` });
+        if (ext && DATA.families[ext]) L.push({ label: "Follow-up practice sample", url: raLink(u, [c, ext], 6, "planner-followup-" + c + "-" + ext), note: `6 questions across ${c} and the extension indicator ${ext}` });
+        else L.push({ label: "Follow-up practice sample", url: raLink(u, [c], 6, "planner-followup-" + c), note: `6 more questions on ${c}` });
+      }
+    }
+  } else if (S.seed === "task"){
+    const t = DATA.tasks.find(x => x.id === $("s-task").value);
+    if (t && t.course === "math-2201"){
+      const inds = t.indicators.filter(c => DATA.families[c]);
+      if (inds.length) L.push({ label: `Practice set: indicators ${inds.join(", ")}`, url: raLink(t.unit, inds, 8, "planner-practice-" + inds.join("-")), note: "8 questions on the task's indicators that have bank stock" });
+    }
+  }
+  return L;
+}
+function renderLinks(links){
+  const card = $("links-card");
+  if (!links || !links.length){ card.classList.add("hidden"); $("links-out").innerHTML = ""; return; }
+  card.classList.remove("hidden");
+  $("links-out").innerHTML = links.map(l => `<p><a href="${l.url}" target="_blank" rel="noopener"><b>${esc(l.label)}</b></a><br><span class="muted">${esc(l.note)}. Opens in the Review Apps with the set already dealt.</span></p>`).join("");
+}
 function buildData(){
   const type = $("f-type").value, time = $("f-time").value.trim(),
         prior = $("f-prior").value.trim(), misc = $("f-misc").value.trim(),
@@ -335,7 +379,7 @@ ${t.title.includes("Scale") ? "Convention: state the scale factor as the multipl
     } else {
       const c = $("s-ind").value, f = DATA.families[c];
       if (!f) { S.lastLabel = "Question seed (no family in this topic)"; return withEvidence("LESSON DATA cannot be built: this topic has no question families in the bank yet. Go back and pick a different topic."); }
-      const ext = next && next.indicators.length ? next.indicators[0] : (prev && prev.indicators.length ? prev.indicators[prev.indicators.length - 1] : null);
+      const ext = prev && prev.indicators.length ? prev.indicators[0] : (next && next.indicators.length ? next.indicators[0] : null);
       label = `Math 2201, question family ${c}`;
       d = `LESSON DATA
 Seed type: question family (the lesson builds toward questions of this sort, then extends beyond them)
@@ -433,6 +477,7 @@ function renderSaved(){
   el.querySelectorAll("[data-view]").forEach(b => b.addEventListener("click", () => {
     const L = getLessons().find(x => x.id === +b.dataset.view); if (!L) return;
     S.currentLessonId = L.id; S.currentReturn = L.ret;
+    renderLinks(L.links || []);
     $("lesson-out").innerHTML = renderReturn(L.ret);
     loadKatex(() => { try { renderMathInElement($("lesson-out"), { delimiters: [ {left:"$$",right:"$$",display:true}, {left:"$",right:"$",display:false} ] }); } catch(e){} });
     show("view-lesson");
@@ -448,16 +493,18 @@ $("build-prompt").addEventListener("click", () => {
   S.fields = { type: $("f-type").value, time: $("f-time").value, prior: $("f-prior").value, misc: $("f-misc").value, assess: $("f-assess").value };
   if (S.seed === "task") S.sel = { task: $("s-task").value };
   else if ($("s-unit")) S.sel = { u: $("s-unit").value, t: $("s-topic").value, i: $("s-ind") ? $("s-ind").value : null };
+  S.links = computeLinks();
   $("prompt-out").value = FRAME + "\n\n" + buildData(); show("view-prompt");
 });
 $("copy-prompt").addEventListener("click", () => { $("prompt-out").select(); if (navigator.clipboard) navigator.clipboard.writeText($("prompt-out").value); else document.execCommand("copy"); $("copy-prompt").textContent = "Copied"; setTimeout(() => $("copy-prompt").textContent = "Copy the prompt", 1500); });
 function doRender(){
   const ret = $("return-in").value.trim(); if (!ret) return;
   S.currentReturn = ret;
-  const a = getLessons(); const L = { id: Date.now(), when: new Date().toLocaleString("en-CA"), label: S.lastLabel || "Lesson", ret, reflection: null };
+  const a = getLessons(); const L = { id: Date.now(), when: new Date().toLocaleString("en-CA"), label: S.lastLabel || "Lesson", ret, reflection: null, links: S.links || [] };
   a.push(L); setLessons(a); S.currentLessonId = L.id;
   $("lesson-out").innerHTML = renderReturn(ret);
   loadKatex(() => { try { renderMathInElement($("lesson-out"), { delimiters: [ {left:"$$",right:"$$",display:true}, {left:"$",right:"$",display:false} ] }); } catch(e){} });
+  renderLinks(S.links || []);
   renderSaved(); show("view-lesson");
 }
 $("render-lesson").addEventListener("click", doRender);
@@ -496,19 +543,33 @@ async function draftWithGemini(){
   const st = $("draft-status");
   if (!key){ st.textContent = "Add your Gemini API key above first (free from Google AI Studio), or use the copy and paste route."; $("api-key").focus(); return; }
   localStorage.setItem("plannerGeminiKey", key);
-  const model = $("api-model").value;
-  const btn = $("draft-api"); btn.disabled = true; btn.textContent = "Drafting..."; st.textContent = "Sending the prompt to Gemini. A full lesson can take half a minute.";
-  try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, { method: "POST", headers: { "x-goog-api-key": key, "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts: [{ text: $("prompt-out").value }] }], generationConfig: { maxOutputTokens: 8192 } }) });
-    const data = await res.json();
-    if (!res.ok) throw new Error((data.error && data.error.message) || ("HTTP " + res.status));
-    const parts = (((data.candidates || [])[0] || {}).content || {}).parts || [];
-    const text = parts.map(p => p.text || "").join("");
-    if (!text) throw new Error("Gemini returned no text. Try again, or use the copy and paste route.");
-    $("return-in").value = text;
-    st.textContent = "Draft received.";
-    doRender();
-  } catch(e){ st.textContent = "Drafting failed: " + e.message + " The copy and paste route below still works."; }
+  const chosen = $("api-model").value;
+  const chain = [chosen, ...["gemini-2.5-flash", "gemini-3.8-flash", "gemini-2.5-pro"].filter(m => m !== chosen)];
+  const names = { "gemini-3.8-flash": "Gemini 3.8 Flash", "gemini-2.5-flash": "Gemini 2.5 Flash", "gemini-2.5-pro": "Gemini 2.5 Pro" };
+  const btn = $("draft-api"); btn.disabled = true; btn.textContent = "Drafting...";
+  let lastErr = "";
+  for (let i = 0; i < chain.length; i++){
+    const model = chain[i];
+    st.textContent = i === 0 ? `Sending the prompt to ${names[model]}. A full lesson can take half a minute.` : `${names[chain[i - 1]]} is busy. Trying ${names[model]} instead.`;
+    try {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, { method: "POST", headers: { "x-goog-api-key": key, "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ parts: [{ text: $("prompt-out").value }] }], generationConfig: { maxOutputTokens: 8192 } }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error((data.error && data.error.message) || ("HTTP " + res.status));
+      const parts = (((data.candidates || [])[0] || {}).content || {}).parts || [];
+      const text = parts.map(p => p.text || "").join("");
+      if (!text) throw new Error("Gemini returned no text. Try again, or use the copy and paste route.");
+      $("return-in").value = text;
+      st.textContent = i === 0 ? "Draft received." : `Draft received from ${names[model]}.`;
+      doRender();
+      btn.disabled = false; btn.textContent = "Draft with Gemini";
+      return;
+    } catch(e){
+      lastErr = e.message;
+      if (!/high demand|overloaded|try again later/i.test(e.message)){ st.textContent = "Drafting failed: " + e.message + " The copy and paste route below still works."; btn.disabled = false; btn.textContent = "Draft with Gemini"; return; }
+      if (i < chain.length - 1) await new Promise(r => setTimeout(r, 2000));
+    }
+  }
+  st.textContent = "Drafting failed: every model is busy right now (" + lastErr + ") Wait a minute and try again, or use the copy and paste route below.";
   btn.disabled = false; btn.textContent = "Draft with Gemini";
 }
 $("draft-api").addEventListener("click", draftWithGemini);
